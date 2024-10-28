@@ -2,7 +2,7 @@
 GoodboyRetriever was a pet (pun intended!) project of mine from 2020. I had been waiting to share him until he was further developed, but ... 2020. I've finally decided to just clean him up and post.   
   
 ![GoodboyRetriever](https://github.com/janniec/GoodboyRetriever/blob/main/images/golden_retriever.jpg)  
-image source: [Wag!](https://wagwalking.com/training/train-a-golden-retriever-to-fetch)    
+(image source: [Wag!](https://wagwalking.com/training/train-a-golden-retriever-to-fetch))    
   
 GoodboyRetriever is a customizable information retrieval model (a RAG without text generation) utilizing pretrained embeddings from large language models (LLMs) and deployable to Slack. Instead of a chatbot, he was intended to be a reference tool customizable to any knowledge base. When GoodboyRetriever is fed a prompt, he will return the most relevant sentences from that knowledge base.  Sometimes you want to see the source, not read a curated response from a chat bot. Possible applications I had in mind were...   
 - retrieve all passages related to a symptom from a collection of medical records to review a patient's history with that health condition  
@@ -11,7 +11,7 @@ GoodboyRetriever is a customizable information retrieval model (a RAG without te
   
 ## GoodboyRetriever is basically RAG  
 ![RAG-ish](https://github.com/janniec/GoodboyRetriever/blob/main/images/RAG_WIP.png)  
-image source: [Medium](https://ai.plainenglish.io/a-brief-introduction-to-retrieval-augmented-generation-rag-b7eb70982891) 
+(image source: [Medium](https://ai.plainenglish.io/a-brief-introduction-to-retrieval-augmented-generation-rag-b7eb70982891)) 
   
 RAG (Retrieval-Augmented Generation) is a cost-effective system to improve the output of LLMs, allowing them to reference knowledge outside of their training data, and focusing the LLMs to specific domains without the need to retrain the model. The key steps of a RAG are:    
 1. Prepare a corpus of text data as a searchable knowledge base, transforming raw data into consistent "documents".
@@ -28,8 +28,8 @@ For more information on RAGs, click [here](https://aws.amazon.com/what-is/retrie
 ## How does Goodboy Retrieve Answers?  
   
 1. GoodboyRetriever needs to be fed a corpus of text data as the knowledge base.  
-2. The corpus will be chunked into pages and sentences. Chunking is performed hierarchically, utilizing SpaCy's POS (part of speech), punctuation, and lastly a limit on the number of tokens.  
-3. The pages will be vectorized using a pretrained Doc2Vec embeddings based on wikipedia data.  
+2. The corpus will be chunked into pages and sentences. Chunking is performed hierarchically, utilizing punctuation, SpaCy's POS (part of speech), and lastly a limit on the number of tokens.  
+3. The pages will be vectorized using pretrained Doc2Vec embeddings based on wikipedia data.  
 4. The sentences will be vectorized using an engine running on a large pretrained BERT model.   
 5. All the page vectors and sentences vectors are stored using Klepto.  
 6. When GoodboyRetriever is fed a query, it will vectorize the query twice. Once with Doc2Vec to produce a "page vector" version of the query. Then, with the BERT engine to produce a "sentence vector" version of the query.   
@@ -41,16 +41,16 @@ For more information on RAGs, click [here](https://aws.amazon.com/what-is/retrie
 To optimize GoodboyRetriever to function in near real time, I wanted him to first narrow the focus to a few relevant pages before it looked through the sentences. For this, I leveraged a publically available pretrained Doc2Vec DBOW embeddings trained on wikipedia text.    
   
 ![Doc2Vec](https://github.com/janniec/GoodboyRetriever/blob/main/images/doc2vec.png)  
-image source: [Medium](https://medium.com/wisio/a-gentle-introduction-to-doc2vec-db3e8c0cce5e) 
+(image source: [Medium](https://medium.com/wisio/a-gentle-introduction-to-doc2vec-db3e8c0cce5e)) 
   
-Doc2Vec is deep learning model that learned vector representations (aka document embeddings) of documents, mapping each document, regardless of length, to a fixed-length vector in a high-dimensional space.   
+Doc2Vec is deep learning model that learned vector representations (aka document embeddings) of documents, mapping each document regardless of length to a fixed-length vector in a high-dimensional space.   
   
 There are 2 variations of the Doc2Vec model. 
 
 - A Distributed Bag of Words (DBOW) Doc2Vec model starts with a unique Document ID for each document. The words in the document are not inputs but labels.  The model will learn to predict the probability of each word in the document based on the document vector only. The embeddings from this model treat the documents as a "bag of words" without capturing the order of the words. But these embeddings are simplier and faster to train.   
 - In a Distributed Memory (DM) Doc2Vec model, words from the documents and a unique Document ID for each document are the inputs. The DM model will create a unique vector representation for each document based on the order of the context words. This approach allows the vectors to capture the semantic meaning of documents.  
    
-For GoodboyRetriever, embeddings from a DM model would have been preferred, but none were available.  As next steps, I'd like to train a DM Doc2Vec model myself instead of relying on a pretrained DBOW model.  
+For GoodboyRetriever, embeddings from a DM model would have been preferred, but none were available.  As next steps, I'd like to train a DM Doc2Vec model instead of relying on a pretrained DBOW model.  
   
 For more information on Doc2Vec, click [here](https://www.geeksforgeeks.org/doc2vec-in-nlp/).  
   
@@ -58,18 +58,18 @@ For more information on Doc2Vec, click [here](https://www.geeksforgeeks.org/doc2
 GoodboyRetriever is ultimately performing a sentence-level task. And for those, BERT is still the most successful and widely used LLM and a good place to start.   
   
 ![BERT Masked Language Model](https://github.com/janniec/GoodboyRetriever/blob/main/images/BERT_MLM.png)  
-image source: [AnalyticsVidhya](https://www.analyticsvidhya.com/blog/2022/02/analyzing-semantic-equivalence-of-sentences-using-bert/) 
+(image source: [AnalyticsVidhya](https://www.analyticsvidhya.com/blog/2022/02/analyzing-semantic-equivalence-of-sentences-using-bert/)) 
   
 BERT (Bidirectional Encoder Representations from Transformers) is a transformer-based deep learning model that uses attention to capture the relationship between words without sequential processing. It produces vector representations of sentences (aka sentence embeddings) via 2 tasks in the training process.     
- - Masked Lanuage Model -  BERT takes in 2 inputs, the words in a sentence and a unique identifier for the sentence, a CLS token. It learns to predict missing words in a sentence by considering the surrounding words from both directions.
- - Next Sentence Prediction - At the same time, BERT is trained to predict whether 2 sentences will appear consecutively or not. The "words in a sentence" input I just mentioned above is actually the words from 2 sentences with a separater token in between.  
+ - Masked Lanuage Model (pictured above) -  BERT takes in 2 inputs, the words in a sentence and a unique identifier for the sentence, a CLS token. It learns to predict missing words in a sentence by considering the surrounding words from both directions.
+ - Next Sentence Prediction (pictured below) - At the same time, BERT is trained to predict whether 2 sentences will appear consecutively or not. The "words in a sentence" input I just mentioned above is actually the words from 2 sentences with a separater token in between.  
   
 ![BERT Next Sentence Prediction](https://github.com/janniec/GoodboyRetriever/blob/main/images/BERT_NSP.jpg)  
-image source: [GeeksforGeeks](https://www.geeksforgeeks.org/understanding-bert-nlp/)   
+(image source: [GeeksforGeeks](https://www.geeksforgeeks.org/understanding-bert-nlp/))   
    
 As a result of these simultaneous tasks, the learned weights associated with the CLS token become the vector representations of sentences that capture the syntactic and semantic structures.   
    
-Training a BERT model for custom embeddings is not recommended as it requires massive amounts of data and is a long and expensive process. But fine tuning an pretrained model for specific tasks is approachable and something I'd like to tackle as next steps.    
+Training a BERT model for custom embeddings is not recommended as it requires massive amounts of data and is a long and expensive process. But fine tuning a pretrained model for specific tasks is approachable and something I'd like to tackle as next steps.    
    
 For more information on BERT, click [here](https://medium.com/@shaikhrayyan123/a-comprehensive-guide-to-understanding-bert-from-beginners-to-advanced-2379699e2b51) and [here](https://osanseviero.github.io/hackerllama/blog/posts/sentence_embeddings/).
   
@@ -152,7 +152,7 @@ or from pipenv, run this in the terminal
 ```  
 model_file = 'enwiki_dbow/doc2vec.bin'  
 enwiki = get_tmpfile(model_file)  
-enwikis_model = Doc2Vec.load(enwiki)  
+enwiki_model = Doc2Vec.load(enwiki)  
 ```  
 2. Switch out 'list_of_tokens' with a list of strings and infer a vector.  
 ```  
@@ -188,21 +188,21 @@ NOTE: The server is going to make a bunch of annoying 'tmp' folders. I don't kno
 
 # How to use GoodboyRetriever  
   
-## to make the context  
+## to setup the vector database
+```  
+import PrevectorizeEverything as pe  
+PV = pe.Prevectorizor()  
+PV.__time_function__(True)  
+PV.vectorize_context('OCR_output_directory', 'path/to/save/context')  
+```
+  
+## to ask the a question in the terminal  
 ```  
 import AnswerQuestions as aq  
 GBR = aq.GoodboyRetrieveAnswers()  
 GBR.load_context()  
 answer = GBR.ask_question('Put your question here?')  
 print(answer)  
-```  
-  
-## to ask the a question in the terminal  
-```  
-import PrevectorizeEverything as pe  
-PV = pe.Prevectorizor()  
-PV.__time_function__(True)  
-PV.vectorize_context('OCR_output_directory', 'path/to/save/context')  
 ```  
   
 ## to run the slackbot  
@@ -215,11 +215,11 @@ The slackbot.py module will annoyingly/helpfully print slack events in the termi
     `ctrl` + `a` + `d`  
 4. In your slack workspace locate the GoodboyRetriever app & ask your questions. 
   
- 
+  
+![Retrieve more context](https://github.com/janniec/GoodboyRetriever/blob/main/images/retrieve_more.jpg)  
+(image source: [Pinterest](https://ru.pinterest.com/pin/847450854852769236/))    
   
 # Next Steps   
-![Retrieve more context](https://github.com/janniec/GoodboyRetriever/blob/main/images/retrieve_more.jpg)  
-image source: [Pinterest](https://ru.pinterest.com/pin/847450854852769236/)  
   
 - I'd like to standardize and automate some sort of an evaluation metric to measure GoodboyRetriever's performance as I update him. Maybe Precision@K or Mean Reciprocal Rank.   
 - To improve performance, I'd like to add steps to train a Doc2Vec Distributed Memory (DM) model and fine tune the BERT embeddings.  
